@@ -1,15 +1,16 @@
 strict digraph  {
-	petal_width -> "Iris-setosa
-";
-	petal_width -> petal_length;
-	petal_length -> sepal_width;
-	sepal_width -> "Iris-virginica
-";
-	sepal_width -> "Iris-versicolor
-";
-	sepal_width -> sepal_length;
-	sepal_length -> "Iris-virginica
-";
-	sepal_length -> "Iris-versicolor
-";
+	"'RID'16" -> no22;
+	"'RID'16" -> yes28;
+	"'RID'16" -> yes21;
+	"'RID'16" -> yes23;
+	"'RID'16" -> yes26;
+	"'RID'16" -> yes29;
+	"'RID'16" -> yes17;
+	"'RID'16" -> no25;
+	"'RID'16" -> no18;
+	"'RID'16" -> no30;
+	"'RID'16" -> yes24;
+	"'RID'16" -> no19;
+	"'RID'16" -> yes20;
+	"'RID'16" -> yes27;
 }

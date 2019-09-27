@@ -1,0 +1,1 @@
+'RID','age','income','student','credit'

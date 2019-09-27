@@ -22,7 +22,7 @@ from sklearn.svm import SVR
 import numpy as np
 
 # from DatasetLoad import load_iris_data
-from DatasetLoad import load_iris_data, load_wine_data, load_breastcancer_data
+from DatasetLoad import load_iris_data, load_wine_data, load_breastcancer_data, load_textbook_data
 from DecisionTree import DecisionTreeNode
 from graphDrawing import draw_graph
 
@@ -30,6 +30,8 @@ from graphDrawing import draw_graph
 # edgeLable={}
 AttributeType={}
 AttributeValue={}
+edgeType={}
+edgeLabel={}
 def isSameClass(D):
 
     classLabels=[]
@@ -146,6 +148,7 @@ def getCataEntropy(attrInfox):
     totalInfo=0
     infoLen=len(attrInfo)
     for attval in attrlist:
+        print(attval)
         attvalnum=0
         d={}
         for tup in attrInfo:
@@ -163,7 +166,7 @@ def getCataEntropy(attrInfox):
         totalInfo+=indivInfo
 
 
-    return None,totalInfo
+    return totalInfo
 
 
 
@@ -171,22 +174,22 @@ def getCataEntropy(attrInfox):
 def attribute_selection_method(D,attribute_list):
 
     # print(attribute_list)
-
-    selected_attr=[None,100000000000]
+    # attribute name, information gain, [split point]
+    selected_attr=[None,100000000000,100000000000]
     for attr in attribute_list:
 
-        print(attr, AttributeType[attr])
+        # print(attr, AttributeType[attr])
         if AttributeType[attr]=="Categorical":
-            mid,res = getCataEntropy(getDataColumn(attr, D))
-            if res < selected_attr[1]:
-                selected_attr = [attr, res]  #here storing information gain
+            gain = getCataEntropy(getDataColumn(attr, D))
+            if gain < selected_attr[1]:
+                selected_attr = [attr, gain, 100000000000]  #here storing information gain
 
         else:
-            mid,res=getEntropy(getDataColumn(attr,D))
-            if res < selected_attr[1]:
-                selected_attr = [attr, mid]
+            split,gain=getEntropy(getDataColumn(attr,D))
+            if gain < selected_attr[1]:
+                selected_attr = [attr, gain, split]
 
-        # print("Entropy:",attr, res)
+        print("attr:",attr,"gain", gain)
 
     return selected_attr
 
@@ -213,7 +216,7 @@ def getMajorityVoting(Dx):
 
 
 
-edgeType={}
+
 
 def getPartitionsForContinuous(D, splitting_attribute,split_point):
     DatabaseList=[]
@@ -234,28 +237,38 @@ def getPartitionsForContinuous(D, splitting_attribute,split_point):
 
     DatabaseList.append(D1)
     DatabaseList.append(D2)
-    return DatabaseList
+    return DatabaseList,None
 
 def getPartitionsForCategorical(D, splitting_attribute):
     DatabaseList = []
 
+    # print("Before")
+    # for dat in D:
+    #     print(dat)
 
     databasedict={}
     for dtuple in D:
         datatuple = copy.deepcopy(dtuple)
-        if datatuple[0][splitting_attribute] not in databasedict:
-            databasedict[datatuple[0][splitting_attribute]]=[]
+        if dtuple[0][splitting_attribute] not in databasedict:
+            databasedict[dtuple[0][splitting_attribute]]=[]
+
         datatuple[0].pop(splitting_attribute,None)
-        databasedict[datatuple[0][splitting_attribute]].append(datatuple)
+        databasedict[dtuple[0][splitting_attribute]].append(datatuple)
+
+
+    # print("After printing databaes")
 
     for database in databasedict:
-        DatabaseList.append(list(database))
+        DatabaseList.append(list(databasedict[database]))
 
-    return DatabaseList
+    split_att_values=list(databasedict.keys())
+    return DatabaseList,split_att_values
 
 
 
 def Generate_decision_tree(Dx,attribute_listx):
+
+
 
     issameclass=isSameClass(Dx)
 
@@ -282,26 +295,32 @@ def Generate_decision_tree(Dx,attribute_listx):
 
     attribute_list=copy.deepcopy(attribute_listx)
 
-    splitting_attribute, split_point = attribute_selection_method(D, attribute_list)
+    splitting_attribute,infoGain, split_point = attribute_selection_method(D, attribute_list)
     # print(splitting_attribute, split_point)
     node=DecisionTreeNode(splitting_attribute)
     node.splitpoint=split_point
 
 
+
     attribute_list.remove(splitting_attribute)
 
     if AttributeType[splitting_attribute]=="Categorical":
-        DatabaseList=getPartitionsForCategorical(D,splitting_attribute)
+        DatabaseList,split_att_values=getPartitionsForCategorical(D,splitting_attribute)
     else:
-        DatabaseList=getPartitionsForContinuous(D,splitting_attribute,split_point)
+        DatabaseList,split_att_values=getPartitionsForContinuous(D,splitting_attribute,split_point)
 
 
+    idx=0
     for partition in DatabaseList:
 
         if len(partition) == 0:
             childNode = getMajorityVoting(partition)
         else:
             childNode = Generate_decision_tree(partition, attribute_list)
+
+        if AttributeType[splitting_attribute]=="Categorical":
+            edgeLabel[(node,childNode)] = split_att_values[idx]
+            idx += 1
 
         node.children.append(childNode)
 
@@ -320,11 +339,25 @@ def Generate_decision_tree(Dx,attribute_listx):
 
 
 
-def dfs(node):
+def runDFS(root):
+    G = nx.DiGraph()
 
+    finaledgeLabel={}
+    dfs(root,G,finaledgeLabel)
+    draw_graph(G,finaledgeLabel)
+
+def dfs(node,G,finaledgeLabel):
     for child in node.children:
-        print(node.label,"->",edgeType[(node,child)],child.label)
-        dfs(child)
+        u=node.label+str(node.id)
+        v=child.label+str(child.id)
+        G.add_edge(u,v)
+        if (node,child) not in edgeLabel:
+            finaledgeLabel[(u,v)]=-1
+        else:
+            finaledgeLabel[(u,v)]=edgeLabel[(node,child)]
+
+        print(node.label,"->",child.label)
+        dfs(child,G,finaledgeLabel)
 
 #
 # def performCrossValidation(D):
@@ -343,13 +376,19 @@ def testInDecisionTree(node,data):
             # print("base",node.label,data[1])
             # print("Unmatched",data)
             return 0
-    # print(data[0][node.label])
-    if data[0][node.label]<= node.splitpoint:
-        # print(node.label,"-->",node.children[0].label,"%.4f" %node.splitpoint)
-        ret=testInDecisionTree(node.children[0],data)
+
+
+    ret=0
+
+    if AttributeType[node.label]=="Categorical":
+        for child in node.children:
+            if edgeLabel[(node,child)]==data[0][node.label]:
+                ret=testInDecisionTree(child,data)
     else:
-        # print(node.label,"-->",node.children[1].label,"%.4f" % node.splitpoint)
-        ret=testInDecisionTree(node.children[1],data)
+        if data[0][node.label]<= node.splitpoint:
+            ret=testInDecisionTree(node.children[0],data)
+        else:
+            ret=testInDecisionTree(node.children[1],data)
 
     return ret
 
@@ -397,46 +436,70 @@ def getCategoricalAttributeValue(attribute_list,X):
 
 
 
+def runCrossValidation(attribute_list,X,y):
 
-if __name__ == '__main__':
-
-    # D = input_data()
-
-
-    # draw_graph(G,edgeLable)
-    # dfs(root)
-
-    attribute_list,AttributeType,X,y=load_breastcancer_data()
-    # attribute_list,AttributeType,X,y=load_iris_data()
-
-    getCategoricalAttributeValue(attribute_list,X)
-    # attribute_list,X,y=load_wine_data()
-
-    covered, corrected=0,0
-
+    covered, corrected = 0, 0
     best_svr = SVR(kernel='rbf')
     cv = KFold(n_splits=10, random_state=42, shuffle=False)
     for train_index, test_index in cv.split(X):
-        # print("Train Index: ", train_index, "\n")
-        # print("Test Index: ", test_index)
-
         X_train, X_test, y_train, y_test = getData(X, train_index), getData(X, test_index) \
             , getData(y, train_index), getData(y, test_index)
 
-        trainData=transformDataSet(X_train.values.tolist(),y_train.values.tolist())
-        testData=transformDataSet(X_test.values.tolist(),y_test.values.tolist())
+        trainData = transformDataSet(X_train.values.tolist(), y_train.values.tolist())
+        testData = transformDataSet(X_test.values.tolist(), y_test.values.tolist())
         root = Generate_decision_tree(trainData, attribute_list)
-
-
-        ret=0
+        ret = 0
         for tup in testData:
-            ret+=testInDecisionTree(root,tup)
-        print("res",ret, len(testData))
+            ret += testInDecisionTree(root, tup)
+        print("res", ret, len(testData))
+        covered += len(testData)
+        corrected += ret
+    print("Total", corrected, covered, "acuracy %.3f" % (corrected / covered * 100))
 
-        covered+=len(testData)
-        corrected+= ret
-    #
-    print("Total", corrected, covered,"acuracy %.3f" % (corrected/covered*100))
+
+
+def runOnFullDataset(attribute_list,X,y):
+    covered, corrected = 0, 0
+    best_svr = SVR(kernel='rbf')
+    cv = KFold(n_splits=2, random_state=42, shuffle=False)
+    for train_index, test_index in cv.split(X):
+        X_train, X_test, y_train, y_test = getData(X, train_index), getData(X, test_index) \
+            , getData(y, train_index), getData(y, test_index)
+
+        trainData = transformDataSet(X_train.values.tolist(), y_train.values.tolist())
+        testData = transformDataSet(X_test.values.tolist(), y_test.values.tolist())
+
+        root = Generate_decision_tree(trainData+testData, attribute_list)
+
+
+    runDFS(root)
+
+if __name__ == '__main__':
+
+
+
+    # D = input_data()
+    # draw_graph(G,edgeLable)
+    # dfs(root)
+
+
+
+
+
+    #Dataset load#
+    # attribute_list,AttributeType,X,y=load_breastcancer_data()
+    # attribute_list,AttributeType,X,y=load_iris_data()
+    attribute_list,AttributeType,X,y=load_textbook_data()
+
+
+    getCategoricalAttributeValue(attribute_list,X)
+
+
+
+
+    runOnFullDataset(attribute_list,X,y)
+    # runCrossValidation(attribute_list,X,y)
+
     #
 
 
