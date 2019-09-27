@@ -1,0 +1,15 @@
+strict digraph  {
+	petal_width -> "Iris-setosa
+";
+	petal_width -> petal_length;
+	petal_length -> sepal_width;
+	sepal_width -> "Iris-virginica
+";
+	sepal_width -> "Iris-versicolor
+";
+	sepal_width -> sepal_length;
+	sepal_length -> "Iris-virginica
+";
+	sepal_length -> "Iris-versicolor
+";
+}

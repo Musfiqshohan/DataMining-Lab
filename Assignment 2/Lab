@@ -1,0 +1,37 @@
+https://archive.ics.uci.edu/ml/datasets.php
+
+
+mashroom dataset.
+
+Iris -https://archive.ics.uci.edu/ml/datasets/Iris
+test at first but need to randomize for corss validation.
+play tennis
+
+
+attributes short large
+catagorical, numeric
+
+classification.
+information gain/ gini index  also can comapare between them
+
+1.simple, balanced dataset.
+2. pruning (pre pruning) threshold 5% , can vary also
+3. test data .
+4. accuracy, 
+
+
+balanced and imbalanced dataset..
+stratified dataset.
+
+
+
+After two weeks naive bayesian
+
+
+after next two weeks compare between them.
+does their result significance.
+
+10fold or 5 fold.
+
+16 in decision tree
+30 bayesian tree

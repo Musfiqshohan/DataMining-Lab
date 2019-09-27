@@ -1,0 +1,13 @@
+1. code for cross validation
+2. see the acuracy
+3. If less then try to debug
+
+
+problems:
+need to draw a graph
+not sure if the result is ok
+have to test for categorical data
+test against python data.
+
+note:
+always install the lates version for python 3
