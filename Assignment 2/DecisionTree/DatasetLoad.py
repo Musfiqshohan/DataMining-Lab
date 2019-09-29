@@ -19,6 +19,7 @@ def load_iris_data():
     AttributeType = {}
     for attr in attribute_list:
         AttributeType[attr] = "Continous"
+    datasetname="iris"
     dataset = pandas.read_csv('Dataset/iris.data')
 
     singletup = dataset.iloc[1, :]
@@ -28,7 +29,7 @@ def load_iris_data():
     X = dataset.iloc[:, colList]
     y = dataset.iloc[:, classlabList]
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 
 def load_textbook_data():
@@ -37,6 +38,7 @@ def load_textbook_data():
     AttributeType={}
     for attr in attribute_list:
         AttributeType[attr]="Categorical"
+    datasetname="textbook"
     dataset = pandas.read_csv('Dataset/textbook.data')
 
     singletup = dataset.iloc[1, :]
@@ -46,7 +48,7 @@ def load_textbook_data():
     X = dataset.iloc[:, colList]
     y = dataset.iloc[:, classlabList]
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 def load_breastcancer_data():
     attribute_list = readDatasetInfo("breastInfo.txt")
@@ -54,6 +56,7 @@ def load_breastcancer_data():
     AttributeType={}
     for attr in attribute_list:
         AttributeType[attr]="Categorical"
+    datasetname="breast-cancer"
     dataset = pandas.read_csv('Dataset/breast-cancer.data')
 
     singletup = dataset.iloc[1, :]
@@ -63,7 +66,7 @@ def load_breastcancer_data():
     X = dataset.iloc[:, colList]
     y = dataset.iloc[:, classlabList]
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 
 def load_wine_data():
@@ -72,6 +75,7 @@ def load_wine_data():
     AttributeType={}
     for attr in attribute_list:
         AttributeType[attr]="Continous"
+    datasetname="wine"
     dataset = pandas.read_csv('Dataset/wine.data')
 
     singletup = dataset.iloc[1, :]
@@ -82,7 +86,7 @@ def load_wine_data():
     y = dataset.iloc[:, classlabList]
 
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 def load_tictactoe_data():
     attribute_list = readDatasetInfo("tic-tac-toe.txt")
@@ -90,7 +94,8 @@ def load_tictactoe_data():
     AttributeType={}
     for attr in attribute_list:
         AttributeType[attr]="Categorical"
-    # dataset = pandas.read_csv('Dataset/tic-tac-toe.data')
+    # datasetname=""dataset = pandas.read_csv('Dataset/tic-tac-toe.data')
+    datasetname="tic-tac-toe"
     dataset = pandas.read_csv('Dataset/tic-tac-toe.data')
 
     singletup = dataset.iloc[1, :]
@@ -101,7 +106,7 @@ def load_tictactoe_data():
     y = dataset.iloc[:, classlabList]
 
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 
 def load_balancescale_data():
@@ -110,6 +115,7 @@ def load_balancescale_data():
     AttributeType={}
     for attr in attribute_list:
         AttributeType[attr]="Categorical"
+    datasetname="balance-scale"
     dataset = pandas.read_csv('Dataset/balance-scale.data')
 
     singletup = dataset.iloc[1, :]
@@ -119,7 +125,7 @@ def load_balancescale_data():
     X = dataset.iloc[:, colList]
     y = dataset.iloc[:, classlabList]
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 
 def load_agaricus_data():
@@ -128,6 +134,7 @@ def load_agaricus_data():
     AttributeType={}
     for attr in attribute_list:
         AttributeType[attr]="Categorical"
+    datasetname="agaricus-lepiota"
     dataset = pandas.read_csv('Dataset/agaricus-lepiota.data')
 
     singletup = dataset.iloc[1, :]
@@ -137,7 +144,7 @@ def load_agaricus_data():
     X = dataset.iloc[:, colList]
     y = dataset.iloc[:, classlabList]
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 
 def load_nursery_data():
@@ -146,6 +153,7 @@ def load_nursery_data():
     AttributeType = {}
     for attr in attribute_list:
         AttributeType[attr] = "Categorical"
+    datasetname="nursery"
     dataset = pandas.read_csv('Dataset/nursery.data')
 
     singletup = dataset.iloc[1, :]
@@ -155,7 +163,7 @@ def load_nursery_data():
     X = dataset.iloc[:, colList]
     y = dataset.iloc[:, classlabList]
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 def load_abalone_data():
     attribute_list = readDatasetInfo("abaloneInfo.txt")
@@ -165,7 +173,8 @@ def load_abalone_data():
     AttributeType={'Sex':'Categorical','Length':'Continous','Diameter':'Continous','Height':'Continous','Whole weight':'Continous','Shucked weight':'Continous','Viscera weight':'Continous','Shell weight':'Continous','Rings':'Continous'}
 
 
-    dataset = pandas.read_csv('Dataset/abalone.data')
+    datasetname="abalonetest"
+    dataset = pandas.read_csv('Dataset/abalonetest.data')
 
     singletup = dataset.iloc[1, :]
     dimension = len(singletup) - 1
@@ -174,7 +183,7 @@ def load_abalone_data():
     X = dataset.iloc[:, colList]
     y = dataset.iloc[:, classlabList]
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 def load_flare_data():
     attribute_list = readDatasetInfo("flareInfo.txt")
@@ -182,6 +191,7 @@ def load_flare_data():
     AttributeType = {}
     for attr in attribute_list:
         AttributeType[attr] = "Categorical"
+    datasetname="flare"
     dataset = pandas.read_csv('Dataset/flare.data')
 
     singletup = dataset.iloc[1, :]
@@ -191,7 +201,7 @@ def load_flare_data():
     X = dataset.iloc[:, colList]
     y = dataset.iloc[:, classlabList]
 
-    return attribute_list,AttributeType,X,y
+    return attribute_list,AttributeType,X,y,datasetname
 
 
 # copy paste dataset, create datasetInfo, fix them. load_dateset() method,  change filesnames

@@ -1,6 +1,11 @@
 import copy
 import math
+from collections import Counter
+
+import time
+from tabulate import tabulate
 from numpy import array
+import pandas as pd
 import numpy as np
 import itertools
 from DataInput import input_data
@@ -433,20 +438,31 @@ def dfs(node,G,finaledgeLabel):
 
 
 UnmatchedTuple=[]
+ConfusionMatrix=None
+classLabelSerial={}
 
 def testInDecisionTree(node,data):
 
     if len(node.children)==0:
 
+        # print(classLabelSerial[node.label],classLabelSerial[data[1]])
+        # print(node.label, data[1])
+        ConfusionMatrix[classLabelSerial[data[1]]][classLabelSerial[node.label]]+=1
+        flag=0
+        if classLabelSerial[data[1]]==classLabelSerial[node.label]:
+            flag=1
+        # ConfusionMatrix[0][0]+=1
+        # if (node.label,data[1]) not in ConfusionMatrix:
+        #     ConfusionMatrix[(node.label, data[1])]=0
+        #     ConfusionMatrix[(node.label,data[1])]+=1s
+
         if node.label==data[1]:
+            # print("Equal2")
             return 1
         else:
             UnmatchedTuple.append(data)
-            # print("Unmatched", node.status)
-            # print(node.label, data[1])
-            # print(data)
-            # print("base",node.label,data[1])
-            # print("Unmatched",data)
+            # if flag==1:
+            #     print(data[1],node.label, classLabelSerial[data[1]],classLabelSerial[node.label])
             return 0
 
 
@@ -524,6 +540,7 @@ def runCrossValidation(attribute_list,X,y):
 
     covered, corrected = 0, 0
     best_svr = SVR(kernel='rbf')
+    iteration=0
     cv = KFold(n_splits=10, random_state=42, shuffle=True)
     for train_index, test_index in cv.split(X):
         X_train, X_test, y_train, y_test = getData(X, train_index), getData(X, test_index) \
@@ -541,7 +558,8 @@ def runCrossValidation(attribute_list,X,y):
         for tup in testData:
             ret += testInDecisionTree(root, tup)
 
-        print("res", ret, len(testData))
+        print("iteration %d:"%iteration, ret, len(testData))
+        iteration+=1
         # print("Unmatched")
         # print(UnmatchedTuple)
 
@@ -553,6 +571,7 @@ def runCrossValidation(attribute_list,X,y):
 
 
     print("Total", corrected, covered, "acuracy %.3f" % (corrected / covered * 100))
+    print(ConfusionMatrix[0][0]+ConfusionMatrix[1][1])
 
     for tuple in UnmatchedTuple:
         findIntrainData(tuple, trainData)
@@ -596,6 +615,52 @@ def ignoreMissingValues(datasetx):
     return datasetx
 
 
+
+def initConfusionMatrix(Y):
+
+    l= list(Y.iloc[:,0])
+
+
+    mostfreq=max(set(l), key=l.count)
+
+
+    classList=set(l)
+
+    for x in classList:
+
+        if x == mostfreq:
+            classLabelSerial[x]=0
+        else:
+            classLabelSerial[x] = 1
+
+
+
+
+    global ConfusionMatrix
+    ConfusionMatrix=np.zeros((2,2))
+
+
+def calculateMeasures(mat,start_time,datasetname):
+
+    TP= mat[0][0]
+    FN= mat[0][1]
+    FP= mat[1][0]
+    TN= mat[1][1]
+    P=  TP+FN
+    N=  FP+TN
+    accuracy = (TP+TN)/(P+N)
+    recall= TP/P
+    precision= TP/ (TP+FP)
+
+    F1= (2 * precision* recall)/ (precision+recall)
+
+    exectime=  time.time()-start_time
+
+    res=tabulate([['Accuracy', accuracy], ['Recall', recall], ['Precision', precision],['F1 measure', F1], ['ExecutionTime',exectime] ], headers=['Measure', 'Value'],tablefmt='orgtbl')
+    print("Dataset:",datasetname,)
+    print(res)
+
+
 if __name__ == '__main__':
 
 
@@ -607,23 +672,23 @@ if __name__ == '__main__':
 
 
 
-    # attribute_list,AttributeType,X,y=load_textbook_data()
+    # attribute_list,AttributeType,X,y,datasetname=load_textbook_data()
 
 
     ####continuous database####
-    # attribute_list,AttributeType,X,y=load_iris_data()  #94.667%
-    attribute_list,AttributeType,X,y=load_wine_data()  # 93.258 %
+    attribute_list,AttributeType,X,y,datasetname=load_iris_data()  #94.667%
+    # attribute_list,AttributeType,X,y,datasetname=load_wine_data()  # 93.258 %
 
     ####catagorical database####
-    attribute_list,AttributeType,X,y=load_tictactoe_data()   # 83.194%
-    attribute_list,AttributeType,X,y=load_balancescale_data()  #94.080
-    # attribute_list,AttributeType,X,y=load_breastcancer_data()
-    # attribute_list,AttributeType,X,y=load_flare_data()  # 98.128%
-    # attribute_list,AttributeType,X,y=load_agaricus_data()  #100%
-    # attribute_list,AttributeType,X,y=load_nursery_data()  #74%
+    # attribute_list,AttributeType,X,y,datasetname=load_tictactoe_data()   # 83.194%
+    # attribute_list,AttributeType,X,y,datasetname=load_balancescale_data()  #94.080%
+    # attribute_list,AttributeType,X,y,datasetname=load_breastcancer_data()  #60.140%
+    # attribute_list,AttributeType,X,y,datasetname=load_flare_data()  # 98.128%
+    # attribute_list,AttributeType,X,y,datasetname=load_agaricus_data()  #100%
+    # attribute_list,AttributeType,X,y,datasetname=load_nursery_data()  #74%
 
     #### categorical & continuous####
-    # attribute_list,AttributeType,X,y=load_abalone_data()
+    # attribute_list,AttributeType,X,y,datasetname=load_abalone_data()
 
 
 
@@ -633,62 +698,13 @@ if __name__ == '__main__':
 
 
     # runOnFullDataset(attribute_list,X,y)
+    initConfusionMatrix(y)
+
+    start_time = time.time()
     runCrossValidation(attribute_list,X,y)
 
-    exit(0)
-    # iteration=0
-    # covered, corrected = 0, 0
-    # best_svr = SVR(kernel='rbf')
-    # cv = KFold(n_splits=10, random_state=42, shuffle=False)
-    # for train_index, test_index in cv.split(X):
-    #     X_train, X_test, y_train, y_test = getData(X, train_index), getData(X, test_index) \
-    #         , getData(y, train_index), getData(y, test_index)
-    #
-    #     iteration+=1
-    #
-    #     # if iteration!=8:
-    #     #     continue
-    #
-    #     trainData = transformDataSet(X_train.values.tolist(), y_train.values.tolist())
-    #     testData = transformDataSet(X_test.values.tolist(), y_test.values.tolist())
-    #
-    #     # print("traint test")
-    #     # for t in trainData:
-    #     #     print(t)
-    #     # for t in testData:
-    #     #     print(t)
-    #
-    #     trainData=ignoreMissingValues(trainData)
-    #     testData=ignoreMissingValues(testData)
-    #
-    #
-    #     root = Generate_decision_tree(trainData, attribute_list)
-    #     ret = 0
-    #     UnmatchedTuple = []
-    #     for tup in testData:
-    #         ret += testInDecisionTree(root, tup)
-    #
-    #     # print("train data", len(trainData))
-    #     print("iter %d= res" %iteration, ret, len(testData))
-    #
-    #
-    #
-    #
-    #     # print("Unmatched", len(UnmatchedTuple))
-    #     # for tup in UnmatchedTuple:
-    #     #     print(tup)
-    #
-    #     # for tuple in UnmatchedTuple:
-    #     #     findIntrainData(tuple, trainData)
-    #     covered += len(testData)
-    #     corrected += ret
-    #     # this need to be removed########
-    #     # runDFS(root)
-    #     # if ret + 5 < len(testData):
-    #     #     break
-    #
-    # print("Total", corrected, covered, "acuracy %.3f" % (corrected / covered * 100))
 
 
+    calculateMeasures(ConfusionMatrix,start_time,datasetname)
 
 
