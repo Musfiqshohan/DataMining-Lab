@@ -8,3 +8,4 @@ class DecisionTreeNode():
         self.parent=None
         DecisionTreeNode.object_number += 1
         self.id=DecisionTreeNode.object_number
+        status=""

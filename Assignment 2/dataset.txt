@@ -1,0 +1,20 @@
+	
+Nursery 12960 ,8 
+
+Solar Flare 1389 10 
+
+Census Income 48842 14  Categorical, Integer 
+
+Abalone 4177 8  Categorical, Integer, Real 
+
+Artificial Characters 6000 7  Categorical, Integer, Real 
+
+Australian Sign Language signs 	6650 15  Categorical, Real 
+
+
+
+ 
+
+
+
+

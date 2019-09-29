@@ -1,0 +1,1 @@
+Code for class,Code for largest spot size,Code for spot distribution,Activity,Evolution,Previous 24 hour flare activity code,Historically-complex,Did region become historically complex on this pass across the sun's disk,Area,Area of the largest spot

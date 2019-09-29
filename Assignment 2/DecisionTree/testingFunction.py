@@ -11,9 +11,6 @@ import numpy as np
 from numpy import array
 
 
-a=[1,1,2,2]
-a=set(a)
-print(list(a))
 
 
 #
