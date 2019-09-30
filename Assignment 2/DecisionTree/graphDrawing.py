@@ -20,7 +20,7 @@ def draw_graph(G,edgeLabels):
     plt.title('draw_networkx')
     pos =graphviz_layout(G, prog='dot')
     # nx.draw(G, pos, with_labels=True, arrows=True, font_size=8)
-    nx.draw(G, pos, with_labels=True, arrows=True, font_size=8, node_size=5)
+    nx.draw(G, pos, with_labels=True, arrows=True, font_size=8, node_size=8)
 
     nx.draw_networkx_edge_labels(G,pos,edge_labels=edgeLabels,font_color='red',font_size=8)
     # for v in G.node():

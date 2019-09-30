@@ -1,6 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-from networkx.drawing.nx_agraph import write_dot, graphviz_layout
+# from networkx.drawing.nx_agraph import write_dot'','' graphviz_layout
 import random
 from sklearn import svm
 import pandas
@@ -15,36 +15,10 @@ from numpy import array
 
 import numpy as np
 
+year = [2014, 2015, 2016, 2017, 2018, 2019]
+tutorial_count = [39, 117, 111, 110, 67, 29]
 
-
-l=[1,2,2,4,4,4,5]
-ret=max(set(l), key=l.count)
-print(ret)
-# Initialize `x`
-#
-# def getData(dataset, indexList):
-#     indexList=array(indexList)
-#     D=dataset.iloc[indexList,:]
-#     return D
-#
-# dataset = pandas.read_csv('Dataset/iris.data')
-#
-# singletup= dataset.iloc[1,:]
-# dimension=len(singletup)-1
-# colList=[x for x in range(dimension)]
-# classlabList=[dimension]
-# X = dataset.iloc[:, colList]
-# y = dataset.iloc[:, classlabList]
-#
-#
-# best_svr = SVR(kernel='rbf')
-# cv = KFold(n_splits=10, random_state=42, shuffle=False)
-# for train_index, test_index in cv.split(X):
-#     print("Train Index: ", train_index, "\n")
-#     print("Test Index: ", test_index)
-#
-#     X_train, X_test, y_train, y_test = getData(X,train_index), getData(X,test_index)\
-#         , getData(y,train_index), getData(y,test_index)
-#
-#     print(X_train)
-#     print(X_test)
+plt.plot(year, tutorial_count, color="#6c3376", linewidth=3)
+plt.xlabel('Year')
+plt.ylabel('Number of futurestud.io Tutorials')
+plt.savefig('line_plot.pdf')

@@ -28,7 +28,8 @@ import numpy as np
 
 # from DatasetLoad import load_iris_data
 from DatasetLoad import load_iris_data, load_wine_data, load_breastcancer_data, load_textbook_data, load_tictactoe_data, \
-    load_balancescale_data, load_agaricus_data, load_nursery_data, load_abalone_data, load_flare_data
+    load_balancescale_data, load_agaricus_data, load_nursery_data, load_abalone_data, load_flare_data, \
+    load_banknote_data, load_band_data, load_wdbc_data
 from DecisionTree import DecisionTreeNode
 from graphDrawing import draw_graph
 
@@ -38,6 +39,8 @@ AttributeType={}
 AttributeValue={}
 edgeType={}
 edgeLabel={}
+pruneThreshold=0
+prunePercent=0
 def isSameClass(D):
 
     classLabels=[]
@@ -117,7 +120,7 @@ def getSplitInfoGainRatio(mid, attrInfox):
         D2[lab]=0
 
     for attr in attrInfo:
-        # print(attr[0],attr[1])
+        # print(attr[0],mid)
         if attr[0]<=mid:
             d1len+=1
             D1[attr[1]]+=1
@@ -153,14 +156,50 @@ def getSplitInfoGainRatio(mid, attrInfox):
 
     Gain= getPartitionInfoGain(attrInfox)- (infoval1+infoval2)
 
-    split_info= -(d1len/totLen)* np.log2(d1len/totLen)-(d2len/totLen)* np.log2(d2len/totLen)
+    # split_info= -(d1len/totLen)* np.log2(d1len/totLen)-(d2len/totLen)* np.log2(d2len/totLen)
 
     # print("splitinfo",split_info)
     # return Gain/split_info
     return Gain
 
 
-def getGainRatio(attrInfox):
+
+
+def getTernaryRatio(attrInfox):
+
+    attrInfo = copy.deepcopy(attrInfox)
+    attrlist = [x[0] for x in attrInfo]
+    # attrlist.sort()
+    l,r=100000000000,0
+    for x in attrlist:
+        # x=float(x)
+        # print(x, getSplitInfoGainRatio(x,attrInfo))
+        l=min(l,x)
+        r=max(r,x)
+
+    # print("max,min",l,r)
+
+    iter=0
+    while iter<20:
+        iter+=1
+        # print(l, r)
+        mid1 = l + (r - l) / 3
+        mid2 = r - (r - l) / 3
+
+        x = getSplitInfoGainRatio(mid1, attrInfo)
+        y = getSplitInfoGainRatio(mid2, attrInfo)
+        # print(l,r, "->",x, y)
+        if x < y:
+            l = mid1
+        elif y < x:
+            r = mid2
+
+    # print("final l")
+    return l,getSplitInfoGainRatio(l,attrInfo)
+
+
+
+def getContGainRatio(attrInfox):
 
     # print(attrInfo)
     attrInfo= copy.deepcopy(attrInfox)
@@ -214,7 +253,7 @@ def getCataGainRatio(attrInfox):
         totalInfo+=indivInfo
 
         #need change if zero
-        split_info+= - (attvalnum/infoLen) * np.log2(attvalnum/infoLen)
+        # split_info+= - (attvalnum/infoLen) * np.log2(attvalnum/infoLen)
 
     # print("Gain",getPartitionInfoGain(attrInfox)-totalInfo)
     # print("splitinfo", split_info)
@@ -239,7 +278,8 @@ def attribute_selection_method(D,attribute_list):
                 selected_attr = [attr, gain, -1]  #here storing information gain
 
         else:
-            split,gain=getGainRatio(getDataColumn(attr, D))
+            # split,gain=getContGainRatio(getDataColumn(attr, D))
+            split,gain=getTernaryRatio(getDataColumn(attr, D))
             if gain > selected_attr[1]:
                 selected_attr = [attr, gain, split]
 
@@ -378,8 +418,9 @@ def Generate_decision_tree(Dx,attribute_listx):
     idx=0
     for partition in DatabaseList:
 
-        # print("Partition leng",len(partition))
-        if len(partition) == 0:
+        # print(pruneThreshold)
+        if len(partition) <= pruneThreshold:
+        # if len(partition) == 0:
             # print("Partition length 0")
             ret=getMajorityVoting(Dx)
             childNode = DecisionTreeNode(ret)
@@ -551,6 +592,15 @@ def runCrossValidation(attribute_list,X,y):
         trainData = transformDataSet(X_train.values.tolist(), y_train.values.tolist())
         testData = transformDataSet(X_test.values.tolist(), y_test.values.tolist())
 
+        trainData=ignoreMissingValues(trainData)
+        testData=ignoreMissingValues(testData)
+
+        # for d in trainData:
+        #     print(d)
+
+        global pruneThreshold
+        pruneThreshold = prunePercent * len(trainData)
+
         root = Generate_decision_tree(trainData, attribute_list)
         ret = 0
         global UnmatchedTuple
@@ -588,6 +638,10 @@ def runOnFullDataset(attribute_list,X,y):
         trainData = transformDataSet(X_train.values.tolist(), y_train.values.tolist())
         testData = transformDataSet(X_test.values.tolist(), y_test.values.tolist())
 
+        global pruneThreshold
+        pruneThreshold=prunePercent*len(trainData)
+        print(pruneThreshold)
+
         root = Generate_decision_tree(trainData+testData, attribute_list)
         ret = 0
         for tup in testData:
@@ -602,16 +656,21 @@ def runOnFullDataset(attribute_list,X,y):
 
 def ignoreMissingValues(datasetx):
 
-    flag=0
     dataset=copy.deepcopy(datasetx)
     for tuple in dataset:
         for tup in tuple[0]:
             if tuple[0][tup]=='?':
-                flag=1
-                datasetx.remove(tuple)
+                if tuple in datasetx:
+                    datasetx.remove(tuple)
+                    break
 
-    if flag==1:
-        print("Found and ignored")
+
+    for tuple in datasetx:
+        for tup in tuple[0]:
+            if AttributeType[tup] == "Continous":
+                tuple[0][tup] = float(tuple[0][tup])
+
+
     return datasetx
 
 
@@ -656,9 +715,11 @@ def calculateMeasures(mat,start_time,datasetname):
 
     exectime=  time.time()-start_time
 
-    res=tabulate([['Accuracy', accuracy], ['Recall', recall], ['Precision', precision],['F1 measure', F1], ['ExecutionTime',exectime] ], headers=['Measure', 'Value'],tablefmt='orgtbl')
+    res=tabulate([['Accuracy', accuracy],  ['Precision', precision],['Recall', recall],['F1 measure', F1], ['ExecutionTime',exectime] ], headers=['Measure', 'Value'],tablefmt='orgtbl')
     print("Dataset:",datasetname,)
     print(res)
+
+    print("%s,%.6f,%.6f,%.6f,%.6f,%.6f"%(datasetname,accuracy,precision,recall,F1,exectime))
 
 
 if __name__ == '__main__':
@@ -676,8 +737,10 @@ if __name__ == '__main__':
 
 
     ####continuous database####
-    attribute_list,AttributeType,X,y,datasetname=load_iris_data()  #94.667%
-    # attribute_list,AttributeType,X,y,datasetname=load_wine_data()  # 93.258 %
+    # attribute_list,AttributeType,X,y,datasetname=load_iris_data()  #94.667%
+    attribute_list,AttributeType,X,y,datasetname=load_wine_data()  # 93.258 %
+    # attribute_list,AttributeType,X,y,datasetname=load_banknote_data()
+    # attribute_list,AttributeType,X,y,datasetname=load_wdbc_data()
 
     ####catagorical database####
     # attribute_list,AttributeType,X,y,datasetname=load_tictactoe_data()   # 83.194%
@@ -689,18 +752,19 @@ if __name__ == '__main__':
 
     #### categorical & continuous####
     # attribute_list,AttributeType,X,y,datasetname=load_abalone_data()
+    # attribute_list,AttributeType,X,y,datasetname=load_band_data() #66%, 98%
 
 
-
+    # print(y)
 
     getCategoricalAttributeValue(attribute_list,X)
 
 
-
-    # runOnFullDataset(attribute_list,X,y)
     initConfusionMatrix(y)
 
     start_time = time.time()
+
+    # runOnFullDataset(attribute_list,X,y)
     runCrossValidation(attribute_list,X,y)
 
 
